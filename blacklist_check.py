@@ -6,18 +6,21 @@ IP addresses. to use against aws before attaching EIP's to instances
 
 import json
 import requests
+import argparse
 from configparser import ConfigParser
 from pprint import pprint
 
-
 ## API Configuration Data
 ## Parses .mxtbx file for API Key
-
 parser = ConfigParser()
 parser.read('.mxtbx')
-
 API_KEY = parser.get('mxtbx', 'key')
 API_URL = 'https://api.mxtoolbox.com/api/v1'
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-l','--list', nargs='+', type=str, help='IP Address or Addressees space sparated', required=True)
+args = parser.parse_args()
+ips = args.list
 
 def get_blacklist_results(ip):
     '''
@@ -37,11 +40,13 @@ def get_blacklist_results(ip):
     return jresult
 
 def main():
-    blacklist_results = get_blacklist_results('IP HERE')
-    if blacklist_results['Failed']:
-        pprint(blacklist_results['Failed'])
-	#print("This IP is blacklisted")
-    else:
+    for ip in ips:
+      blacklist_results = get_blacklist_results(ip)
+      if blacklist_results['Failed']:
+        #pprint(blacklist_results['Failed'])
+        print("{}\t Failed due to results".format(ip))
+      else:
+        print("{}\t IP is clean".format(ip))
         return 0
 
 main()
